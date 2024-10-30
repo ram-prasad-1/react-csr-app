@@ -33,7 +33,6 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
-      "echo 'npx eslint --cache --quiet --fix'",
       "npx prettier --write"
     ],
     "*.{json,css,scss,md,mdx}": [
