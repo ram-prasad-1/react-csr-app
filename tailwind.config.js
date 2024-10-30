@@ -3,10 +3,6 @@ const colors = require('tailwindcss/colors')
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  experimental: {
-    // Prevents Tailwind from generating that wall of empty custom properties
-    optimizeUniversalDefaults: true,
-  },
   // NOTE:
   // 1. Don't include CSS files here
   // 2. Don’t construct class names dynamically
