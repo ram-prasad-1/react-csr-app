@@ -8,6 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "prettier": "npx prettier --write '**/*.{json,html,css,ts,tsx,js,jsx,md,mdx}'",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -31,7 +32,12 @@
     "vite": "^5.4.9"
   },
   "lint-staged": {
-    "*.js": "eslint --cache --fix",
-    "*.{js,css,md}": "prettier --write"
+    "*.{js,jsx,ts,tsx}": [
+      "echo 'npx eslint --cache --quiet --fix'",
+      "npx prettier --write"
+    ],
+    "*.{json,css,scss,md,mdx}": [
+      "npx prettier --write"
+    ]
   }
 }

@@ -1,11 +1,5 @@
 const DummyPage = () => {
-    return (
-        <div>
-            Dummy
-        </div>
-    );
-};
+  return <div>Dummy</div>
+}
 
-export default DummyPage;
-
-
+export default DummyPage
