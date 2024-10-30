@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --port 5522 --host",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "npx eslint .",
     "preview": "vite preview",
     "prettier": "npx prettier --write 'src/**/*.{json,html,css,ts,tsx,js,jsx,md,mdx}'",
     "prepare": "husky install"
@@ -36,6 +36,7 @@
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
+      "npx eslint --cache --quiet --fix",
       "npx prettier --write"
     ],
     "*.{json,css,scss,md,mdx}": [

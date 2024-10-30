@@ -4,10 +4,25 @@ import react from 'eslint-plugin-react'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
+/** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
-  {ignores: ['dist']},
   {
-    files: ['**/*.{js,jsx}'],
+    // https://eslint.org/docs/latest/use/configure/ignore#ignoring-files
+    // "**/node_modules/", and ".git/" are ignored by default
+    // Keep ignores as first entry
+    // https://www.raulmelo.me/en/blog/migration-eslint-to-flat-config#no-more-eslintignore
+    ignores: [
+      '**/build/',
+      'dist',
+      'prettier.config.mjs',
+      'prettier.config.js',
+      'tailwind.config.js',
+      'postcss.config.js',
+      'vite.config.js',
+    ],
+  },
+  {
+    files: ['**/*.{js,mjs,cjs,ts,jsx,tsx}'],
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser,
@@ -33,6 +48,12 @@ export default [
         'warn',
         {allowConstantExport: true},
       ],
+
+      'no-unused-vars': 'off',
+      'no-unused-expressions': 'off',
+      'react/react-in-jsx-scope': 'off',
+      'react/prop-types': 'off',
+      'no-empty': 'off',
     },
   },
 ]
