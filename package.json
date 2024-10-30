@@ -8,7 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "prettier": "npx prettier --write '**/*.{json,html,css,ts,tsx,js,jsx,md,mdx}'",
+    "prettier": "npx prettier --write 'src/**/*.{json,html,css,ts,tsx,js,jsx,md,mdx}'",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -28,7 +28,10 @@
     "globals": "^15.11.0",
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
-    "prettier": "3.3.3",
+    "postcss": "^8.4.47",
+    "prettier": "^3.3.3",
+    "prettier-plugin-tailwindcss": "^0.6.8",
+    "tailwindcss": "^3.4.14",
     "vite": "^5.4.9"
   },
   "lint-staged": {

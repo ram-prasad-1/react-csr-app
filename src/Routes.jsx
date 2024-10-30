@@ -5,7 +5,7 @@ import Home from '@/pages/Home'
 import NoMatch from '@/pages/NoMatch'
 import DummyPage from '@/pages/DummyPage'
 
-function Routes() {
+function AppRoutes() {
   return (
     <Routes>
       <Route path='/' element={<Home />} />
@@ -16,4 +16,4 @@ function Routes() {
   )
 }
 
-export default Routes
+export default AppRoutes
