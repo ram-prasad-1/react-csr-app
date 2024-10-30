@@ -1,11 +1,10 @@
 import {createRoot} from 'react-dom/client'
-import Routes from './Routes'
-import {BrowserRouter} from 'react-router-dom'
+import {RouterProvider} from 'react-router-dom'
 import '@/css/tailwind.css'
 import '@/css/custom.css'
 
+import {router} from '@/routes'
+
 createRoot(document.getElementById('root')).render(
-  <BrowserRouter>
-    <Routes />
-  </BrowserRouter>,
+  <RouterProvider router={router} />,
 )
