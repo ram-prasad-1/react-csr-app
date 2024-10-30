@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .container {
+        width: 400px;
+        height: 200px;
+        margin: 20px;
+        background-color: burlywood;
+      }
+      .horizontal {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+      }
+
+      .child {
+        font-size: 1.4rem;
+        /* border-radius: 4px; */
+      }
+
+      .flexA {
+        flex: 6 1 0;
+        background-color: darkturquoise;
+      }
+
+      .flexB {
+        flex: 1 1 0;
+        background-color: deepskyblue;
+      }
+
+      .flexC {
+        flex: 1 1 150px;
+        background-color: lightcoral;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="horizontal container">
+      <div class="flexA child">A1</div>
+      <div class="flexB child">B1 2345</div>
+      <div class="flexC child">C12 3456789</div>
+    </div>
+  </body>
+</html>

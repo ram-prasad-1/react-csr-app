@@ -1,11 +1,27 @@
-# React + Vite
+# CSR React + Web Concepts
 
-This template provides a minimal setup to get React working in Vite with HMR and
-some ESLint rules.
+## Quick Actions
 
-Currently, two official plugins are available:
+### Install workspace dependencies
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md)
-  uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc)
-  uses [SWC](https://swc.rs/) for Fast Refresh
+```shell
+# Only apps and packages folders are added as workspaces
+npm install --workspace=packages/ui
+
+npm i lodash -w packages/ui
+```
+
+### Dependency updates
+
+```shell
+# list updates
+npx npm-check-updates
+
+# Update package.json
+npx npm-check-updates -u
+
+# Only update minor versions
+npx npm-check-updates -u -t minor
+```
+
+### Mix

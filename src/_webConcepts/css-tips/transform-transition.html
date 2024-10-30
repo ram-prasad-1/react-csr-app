@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+      .target {
+        transition: transform 10s;
+        transform: translateY(100px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="mx-auto max-w-screen-md p-4">
+      <button onclick="onClick()">Click</button>
+      <div class="box m-24 h-20 w-20 bg-blue-300">cool44</div>
+    </div>
+
+    <script>
+      const $ = (selector) => document.querySelector(selector);
+      function onClick() {
+        const div = $('div.box');
+        div.classList.add('target');
+      }
+    </script>
+  </body>
+</html>
