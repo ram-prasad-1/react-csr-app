@@ -1,5 +1,4 @@
-import {useState} from 'react'
-import {Routes, Route, Outlet, Link} from 'react-router-dom'
+import {Route, Routes} from 'react-router-dom'
 import Home from '@/pages/Home'
 import NoMatch from '@/pages/NoMatch'
 import DummyPage from '@/pages/DummyPage'
