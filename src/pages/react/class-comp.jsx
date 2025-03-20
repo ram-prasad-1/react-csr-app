@@ -6,9 +6,16 @@ class Clock extends PureComponent {
     this.state = {ans: 42, found: false}
   }
   componentDidMount() {}
-  tick = () => this.setState({found: true})
+  tick = () => {
+    console.log('tick....')
+    this.setState({found: true})
+  }
 
-  render = () => <button onClick={this.tick}>click me</button>
+  render = () => (
+    <button onClick={this.tick} className={'p-16'}>
+      click me
+    </button>
+  )
 }
 
 export default Clock
