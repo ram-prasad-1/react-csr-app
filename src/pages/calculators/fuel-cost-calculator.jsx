@@ -33,6 +33,10 @@ const MILEAGE_LIMITS = {
 const STORAGE_KEY = 'fuelCalculatorTrips'
 
 // Utility functions
+const formatNumber = (number) => {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
 const getDistanceStep = (value) => {
   if (value < 10) return DISTANCE_LIMITS.STEPS.SMALL
   if (value < 100) return DISTANCE_LIMITS.STEPS.MEDIUM
@@ -201,7 +205,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
           <div className='flex items-center justify-between'>
             <span className='text-sm font-medium'>Total Cost</span>
             <span className='text-lg font-bold text-green-600'>
-              ₹{totalCost}
+              ₹{formatNumber(totalCost)}
             </span>
           </div>
         </div>
@@ -265,7 +269,7 @@ const FuelCostCalculator = () => {
             <div className='flex items-center justify-between'>
               <span className='text-sm font-medium'>Grand Total</span>
               <span className='text-xl font-bold text-green-600'>
-                ₹{totalCost.toFixed(2)}
+                ₹{formatNumber(totalCost.toFixed(2))}
               </span>
             </div>
           </div>
