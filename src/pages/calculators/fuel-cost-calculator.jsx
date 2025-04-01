@@ -156,22 +156,22 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
 
   useEffect(() => {
     let cost = 0
-    let calculatedMileage = mileage // Default to current mileage for fuel vehicles
+    let calculatedEfficiency = mileage // Default to current mileage for fuel vehicles
 
     if (vehicleType === VEHICLE_TYPES.EV) {
-      // Calculate mileage based on range and battery size
-      calculatedMileage = batterySize > 0 ? range / batterySize : 0
-      setMileage(calculatedMileage.toFixed(2))
+      // Calculate battery efficiency based on range and battery size
+      calculatedEfficiency = batterySize > 0 ? range / batterySize : 0
+      setMileage(calculatedEfficiency.toFixed(2))
 
-      // Calculate cost using the calculated mileage
+      // Calculate cost using the calculated efficiency
       const chargingEfficiency = trip.chargingEfficiency || 0.85
       if (
-        calculatedMileage > 0 &&
+        calculatedEfficiency > 0 &&
         electricityCost > 0 &&
         chargingEfficiency > 0
       ) {
         cost =
-          ((distance / calculatedMileage) * electricityCost) /
+          ((distance / calculatedEfficiency) * electricityCost) /
           chargingEfficiency
       }
     } else {
@@ -183,7 +183,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
     setTotalCost(cost.toFixed(2))
     onUpdate(index, {
       distance,
-      mileage: calculatedMileage,
+      mileage: calculatedEfficiency,
       fuelCost,
       electricityCost,
       totalCost: cost,
@@ -236,7 +236,20 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
         />
         <select
           value={vehicleType}
-          onChange={(e) => setVehicleType(e.target.value)}
+          onChange={(e) => {
+            const newType = e.target.value
+            setVehicleType(newType)
+            // Reset values when switching vehicle types
+            if (newType === VEHICLE_TYPES.EV) {
+              setMileage(DEFAULT_TRIP.mileage)
+              setBatterySize(DEFAULT_TRIP.batterySize)
+              setRange(DEFAULT_TRIP.range)
+              setElectricityCost(DEFAULT_TRIP.electricityCost)
+            } else {
+              setMileage(DEFAULT_TRIP.mileage)
+              setFuelCost(DEFAULT_TRIP.fuelCost)
+            }
+          }}
           className={`ml-2 rounded p-1 text-sm ${styles.input}`}
         >
           <option value={VEHICLE_TYPES.FUEL}>Fuel Vehicle</option>
@@ -275,7 +288,9 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
             {/* Range Input */}
             <div className='space-y-1'>
               <div className='flex items-center justify-between'>
-                <label className='text-sm font-medium'>Range (km)</label>
+                <label className='text-sm font-medium'>
+                  Range Estimate (km)
+                </label>
                 <input
                   type='number'
                   min={RANGE_LIMITS.MIN}
@@ -311,9 +326,11 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
               />
             </div>
 
-            {/* Calculated Efficiency Display */}
+            {/* Battery Efficiency Display */}
             <div className='flex items-center gap-8'>
-              <span className='text-sm font-medium'>Efficiency (km/kWh)</span>
+              <span className='text-sm font-medium'>
+                Battery Efficiency (km/kWh)
+              </span>
               <span className='text-sm font-medium'>{mileage}</span>
             </div>
           </>
