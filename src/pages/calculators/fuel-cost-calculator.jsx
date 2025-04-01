@@ -411,8 +411,6 @@ const FuelCostCalculator = () => {
   const {trips, handleTripUpdate, handleTripDelete, addNewTrip} = useTrips()
   const styles = getThemeStyles(isDarkMode)
 
-  const totalCost = trips.reduce((sum, trip) => sum + trip.totalCost, 0)
-
   return (
     <div className={`rounded-lg p-4 ${styles.container}`}>
       <div className='mb-4 flex items-center justify-between'>
@@ -437,7 +435,7 @@ const FuelCostCalculator = () => {
           />
         ))}
 
-        <div className='flex gap-2'>
+        <div className='flex gap-2 pb-40'>
           <button
             onClick={addNewTrip}
             className={`flex w-fit items-center gap-2 rounded-lg px-4 py-2 text-sm transition-colors ${styles.addButton}`}
@@ -454,18 +452,6 @@ const FuelCostCalculator = () => {
             <span>Remove Last</span>
           </button>
         </div>
-
-        {trips.length > 1 && (
-          <div className={`rounded-lg border p-4 ${styles.container}`}>
-            <h3 className='mb-2 text-lg font-bold'>Total Cost for All Trips</h3>
-            <div className='flex items-center justify-between'>
-              <span className='text-sm font-medium'>Grand Total</span>
-              <span className='text-xl font-bold text-green-600'>
-                ₹{formatNumber(totalCost.toFixed(2))}
-              </span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )
