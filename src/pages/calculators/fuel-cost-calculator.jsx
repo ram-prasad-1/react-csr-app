@@ -151,64 +151,51 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
   const [vehicleType, setVehicleType] = useState(trip.vehicleType)
   const [batterySize, setBatterySize] = useState(trip.batterySize)
   const [range, setRange] = useState(trip.range)
-  const [totalCost, setTotalCost] = useState(0)
   const styles = getThemeStyles(isDarkMode)
 
-  useEffect(() => {
-    let cost = 0
-    let calculatedEfficiency = mileage // Default to current mileage for fuel vehicles
+  // Calculate derived values
+  const calculatedEfficiency =
+    vehicleType === VEHICLE_TYPES.EV
+      ? batterySize > 0
+        ? range / batterySize
+        : 0
+      : mileage
 
-    if (vehicleType === VEHICLE_TYPES.EV) {
-      // Calculate battery efficiency based on range and battery size
-      calculatedEfficiency = batterySize > 0 ? range / batterySize : 0
-      setMileage(calculatedEfficiency.toFixed(2))
-
-      // Calculate cost using the calculated efficiency
-      const chargingEfficiency = trip.chargingEfficiency || 0.85
-      if (
-        calculatedEfficiency > 0 &&
+  const chargingEfficiency = trip.chargingEfficiency || 0.85
+  const totalCost =
+    vehicleType === VEHICLE_TYPES.EV
+      ? calculatedEfficiency > 0 &&
         electricityCost > 0 &&
         chargingEfficiency > 0
-      ) {
-        cost =
-          ((distance / calculatedEfficiency) * electricityCost) /
+        ? ((distance / calculatedEfficiency) * electricityCost) /
           chargingEfficiency
-      }
-    } else {
-      // For fuel: (distance / mileage) * fuelCost
-      if (mileage > 0 && fuelCost > 0) {
-        cost = (distance / mileage) * fuelCost
-      }
-    }
-    setTotalCost(cost.toFixed(2))
+        : 0
+      : mileage > 0 && fuelCost > 0
+        ? (distance / mileage) * fuelCost
+        : 0
+
+  // Update parent whenever any value changes
+  const updateParent = () => {
     onUpdate(index, {
       distance,
       mileage: calculatedEfficiency,
       fuelCost,
       electricityCost,
-      totalCost: cost,
+      totalCost,
       name,
       vehicleType,
-      chargingEfficiency: trip.chargingEfficiency || 0.85,
+      chargingEfficiency,
       batterySize,
       range,
     })
-  }, [
-    distance,
-    mileage,
-    fuelCost,
-    electricityCost,
-    name,
-    vehicleType,
-    batterySize,
-    range,
-  ])
+  }
 
   const handleDistanceChange = (e) => {
     const newValue = Number(e.target.value)
     const step = getDistanceStep(newValue)
     const roundedValue = Math.round(newValue / step) * step
     setDistance(roundedValue)
+    updateParent()
   }
 
   const handleRangeChange = (e) => {
@@ -216,10 +203,50 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
     const step = RANGE_LIMITS.STEP
     const roundedValue = Math.round(newValue / step) * step
     setRange(roundedValue)
+    updateParent()
   }
 
-  const getMileageLimits = () => {
-    return vehicleType === VEHICLE_TYPES.EV ? EV_MILEAGE_LIMITS : MILEAGE_LIMITS
+  const handleVehicleTypeChange = (e) => {
+    const newType = e.target.value
+    setVehicleType(newType)
+    // Reset values when switching vehicle types
+    if (newType === VEHICLE_TYPES.EV) {
+      setMileage(DEFAULT_TRIP.mileage)
+      setBatterySize(DEFAULT_TRIP.batterySize)
+      setRange(DEFAULT_TRIP.range)
+      setElectricityCost(DEFAULT_TRIP.electricityCost)
+    } else {
+      setMileage(DEFAULT_TRIP.mileage)
+      setFuelCost(DEFAULT_TRIP.fuelCost)
+    }
+    updateParent()
+  }
+
+  const handleCostChange = (e) => {
+    const newValue = Number(e.target.value)
+    if (vehicleType === VEHICLE_TYPES.EV) {
+      setElectricityCost(newValue)
+    } else {
+      setFuelCost(newValue)
+    }
+    updateParent()
+  }
+
+  const handleMileageChange = (e) => {
+    const newValue = Number(e.target.value)
+    setMileage(newValue)
+    updateParent()
+  }
+
+  const handleBatterySizeChange = (e) => {
+    const newValue = Number(e.target.value)
+    setBatterySize(newValue)
+    updateParent()
+  }
+
+  const handleNameChange = (e) => {
+    setName(e.target.value)
+    updateParent()
   }
 
   return (
@@ -228,7 +255,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
         <input
           type='text'
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={handleNameChange}
           className={`border-b border-transparent bg-transparent text-lg font-bold outline-none hover:border-current focus:border-current ${
             isDarkMode ? 'text-white' : 'text-black'
           }`}
@@ -236,20 +263,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
         />
         <select
           value={vehicleType}
-          onChange={(e) => {
-            const newType = e.target.value
-            setVehicleType(newType)
-            // Reset values when switching vehicle types
-            if (newType === VEHICLE_TYPES.EV) {
-              setMileage(DEFAULT_TRIP.mileage)
-              setBatterySize(DEFAULT_TRIP.batterySize)
-              setRange(DEFAULT_TRIP.range)
-              setElectricityCost(DEFAULT_TRIP.electricityCost)
-            } else {
-              setMileage(DEFAULT_TRIP.mileage)
-              setFuelCost(DEFAULT_TRIP.fuelCost)
-            }
-          }}
+          onChange={handleVehicleTypeChange}
           className={`ml-2 rounded p-1 text-sm ${styles.input}`}
         >
           <option value={VEHICLE_TYPES.FUEL}>Fuel Vehicle</option>
@@ -297,7 +311,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
                   max={RANGE_LIMITS.MAX}
                   step={RANGE_LIMITS.STEP}
                   value={range}
-                  onChange={(e) => setRange(Number(e.target.value))}
+                  onChange={handleRangeChange}
                   className={`w-20 rounded p-1 text-center text-sm ${styles.input}`}
                 />
               </div>
@@ -321,7 +335,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
                 max={BATTERY_LIMITS.MAX}
                 step={BATTERY_LIMITS.STEP}
                 value={batterySize}
-                onChange={(e) => setBatterySize(Number(e.target.value))}
+                onChange={handleBatterySizeChange}
                 className={`w-24 rounded p-1 text-center text-sm ${styles.input}`}
               />
             </div>
@@ -331,7 +345,9 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
               <span className='text-sm font-medium'>
                 Battery Efficiency (km/kWh)
               </span>
-              <span className='text-sm font-medium'>{mileage}</span>
+              <span className='text-sm font-medium'>
+                {calculatedEfficiency.toFixed(2)}
+              </span>
             </div>
           </>
         ) : (
@@ -343,7 +359,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
                 type='number'
                 step={MILEAGE_LIMITS.STEP}
                 value={mileage}
-                onChange={(e) => setMileage(Number(e.target.value))}
+                onChange={handleMileageChange}
                 className={`w-20 rounded p-1 text-center text-sm ${styles.input}`}
               />
             </div>
@@ -353,7 +369,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
               max={MILEAGE_LIMITS.MAX}
               step={MILEAGE_LIMITS.STEP}
               value={mileage}
-              onChange={(e) => setMileage(Number(e.target.value))}
+              onChange={handleMileageChange}
               className={`h-1.5 w-full cursor-pointer appearance-none rounded-lg ${styles.slider}`}
             />
           </div>
@@ -371,13 +387,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
             value={
               vehicleType === VEHICLE_TYPES.EV ? electricityCost : fuelCost
             }
-            onChange={(e) => {
-              if (vehicleType === VEHICLE_TYPES.EV) {
-                setElectricityCost(Number(e.target.value))
-              } else {
-                setFuelCost(Number(e.target.value))
-              }
-            }}
+            onChange={handleCostChange}
             className={`w-24 rounded p-1 text-center text-sm ${styles.input}`}
           />
         </div>
@@ -387,7 +397,7 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
           <div className='flex items-center justify-between'>
             <span className='text-sm font-medium'>Total Cost</span>
             <span className='text-lg font-bold text-green-600'>
-              ₹{formatNumber(totalCost)}
+              ₹{formatNumber(totalCost.toFixed(2))}
             </span>
           </div>
         </div>
