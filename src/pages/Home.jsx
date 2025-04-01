@@ -1,12 +1,21 @@
 import {Link} from 'react-router-dom'
+import {router} from '@/routes'
+
+const routeNames = {
+  '/dummy': 'Dummy Page',
+  '/react/class-comp': 'Class Components',
+  '/react/useCallback': 'useCallback Hook',
+  '/redux/counter': 'Redux Counter',
+  '/calculators/fuel-cost-calculator': 'Fuel Cost Calculator',
+}
 
 const Home = () => {
-  const routes = [
-    {path: '/dummy', name: 'Dummy Page'},
-    {path: '/react/class-comp', name: 'Class Components'},
-    {path: '/react/useCallback', name: 'useCallback Hook'},
-    {path: '/redux/counter', name: 'Redux Counter'},
-  ]
+  const routes = router.routes
+    .filter((route) => route.path !== '/' && route.path !== '*')
+    .map((route) => ({
+      path: route.path,
+      name: routeNames[route.path] || route.path,
+    }))
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6'>

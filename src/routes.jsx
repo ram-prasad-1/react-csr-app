@@ -5,6 +5,7 @@ import DummyPage from '@/pages/DummyPage'
 import NoMatch from '@/pages/NoMatch'
 import UseCallback from '@/pages/react/usecallback'
 import CounterPage from '@/pages/redux/counter/CounterPage'
+import FuelCostCalculator from '@/pages/calculators/fuel-cost-calculator'
 
 export const router = createBrowserRouter([
   {path: '/', element: <Home />, errorElement: <NoMatch />},
@@ -14,4 +15,6 @@ export const router = createBrowserRouter([
   {path: '/react/useCallback', element: <UseCallback />},
 
   {path: '/redux/counter', element: <CounterPage />},
+
+  {path: '/calculators/fuel-cost-calculator', element: <FuelCostCalculator />},
 ])
