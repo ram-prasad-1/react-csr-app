@@ -88,13 +88,17 @@ const useTrips = () => {
   }
 
   const addNewTrip = () => {
-    setTrips([
-      ...trips,
-      {
-        ...DEFAULT_TRIP,
-        name: `Trip ${trips.length + 1}`,
-      },
-    ])
+    const newTrip =
+      trips.length === 0
+        ? DEFAULT_TRIP
+        : {
+            distance: trips[trips.length - 1].distance,
+            mileage: trips[trips.length - 1].mileage,
+            fuelCost: trips[trips.length - 1].fuelCost,
+            totalCost: 0,
+            name: `Trip ${trips.length + 1}`,
+          }
+    setTrips([...trips, newTrip])
   }
 
   return {
