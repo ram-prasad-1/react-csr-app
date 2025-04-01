@@ -1,12 +1,22 @@
 import {useState, useEffect} from 'react'
 
 // Constants
+const VEHICLE_TYPES = {
+  FUEL: 'fuel',
+  EV: 'ev',
+}
+
 const DEFAULT_TRIP = {
   distance: 1,
   mileage: 16,
   fuelCost: 105,
   totalCost: 0,
   name: 'Trip 1',
+  vehicleType: VEHICLE_TYPES.EV,
+  electricityCost: 12, // Cost per kWh for EV
+  chargingEfficiency: 0.85, // Charging efficiency for EV
+  batterySize: 35, // Battery size in kWh
+  range: 220, // Range in km
 }
 
 const DISTANCE_LIMITS = {
@@ -28,6 +38,24 @@ const MILEAGE_LIMITS = {
   MIN: 1,
   MAX: 50,
   STEP: 0.5,
+}
+
+const EV_MILEAGE_LIMITS = {
+  MIN: 1,
+  MAX: 20, // km/kWh
+  STEP: 0.1,
+}
+
+const RANGE_LIMITS = {
+  MIN: 100,
+  MAX: 800,
+  STEP: 10,
+}
+
+const BATTERY_LIMITS = {
+  MIN: 10,
+  MAX: 150,
+  STEP: 5,
 }
 
 const STORAGE_KEY = 'fuelCalculatorTrips'
@@ -97,6 +125,11 @@ const useTrips = () => {
             fuelCost: trips[trips.length - 1].fuelCost,
             totalCost: 0,
             name: `Trip ${trips.length + 1}`,
+            vehicleType: trips[trips.length - 1].vehicleType,
+            electricityCost: trips[trips.length - 1].electricityCost,
+            chargingEfficiency: trips[trips.length - 1].chargingEfficiency,
+            batterySize: trips[trips.length - 1].batterySize,
+            range: trips[trips.length - 1].range,
           }
     setTrips([...trips, newTrip])
   }
@@ -113,21 +146,80 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
   const [distance, setDistance] = useState(trip.distance)
   const [mileage, setMileage] = useState(trip.mileage)
   const [fuelCost, setFuelCost] = useState(trip.fuelCost)
+  const [electricityCost, setElectricityCost] = useState(trip.electricityCost)
   const [name, setName] = useState(trip.name || `Trip ${index + 1}`)
+  const [vehicleType, setVehicleType] = useState(trip.vehicleType)
+  const [batterySize, setBatterySize] = useState(trip.batterySize)
+  const [range, setRange] = useState(trip.range)
   const [totalCost, setTotalCost] = useState(0)
   const styles = getThemeStyles(isDarkMode)
 
   useEffect(() => {
-    const cost = (distance / mileage) * fuelCost
+    let cost = 0
+    let calculatedMileage = mileage // Default to current mileage for fuel vehicles
+
+    if (vehicleType === VEHICLE_TYPES.EV) {
+      // Calculate mileage based on range and battery size
+      calculatedMileage = batterySize > 0 ? range / batterySize : 0
+      setMileage(calculatedMileage.toFixed(2))
+
+      // Calculate cost using the calculated mileage
+      const chargingEfficiency = trip.chargingEfficiency || 0.85
+      if (
+        calculatedMileage > 0 &&
+        electricityCost > 0 &&
+        chargingEfficiency > 0
+      ) {
+        cost =
+          ((distance / calculatedMileage) * electricityCost) /
+          chargingEfficiency
+      }
+    } else {
+      // For fuel: (distance / mileage) * fuelCost
+      if (mileage > 0 && fuelCost > 0) {
+        cost = (distance / mileage) * fuelCost
+      }
+    }
     setTotalCost(cost.toFixed(2))
-    onUpdate(index, {distance, mileage, fuelCost, totalCost: cost, name})
-  }, [distance, mileage, fuelCost, name])
+    onUpdate(index, {
+      distance,
+      mileage: calculatedMileage,
+      fuelCost,
+      electricityCost,
+      totalCost: cost,
+      name,
+      vehicleType,
+      chargingEfficiency: trip.chargingEfficiency || 0.85,
+      batterySize,
+      range,
+    })
+  }, [
+    distance,
+    mileage,
+    fuelCost,
+    electricityCost,
+    name,
+    vehicleType,
+    batterySize,
+    range,
+  ])
 
   const handleDistanceChange = (e) => {
     const newValue = Number(e.target.value)
     const step = getDistanceStep(newValue)
     const roundedValue = Math.round(newValue / step) * step
     setDistance(roundedValue)
+  }
+
+  const handleRangeChange = (e) => {
+    const newValue = Number(e.target.value)
+    const step = RANGE_LIMITS.STEP
+    const roundedValue = Math.round(newValue / step) * step
+    setRange(roundedValue)
+  }
+
+  const getMileageLimits = () => {
+    return vehicleType === VEHICLE_TYPES.EV ? EV_MILEAGE_LIMITS : MILEAGE_LIMITS
   }
 
   return (
@@ -142,6 +234,14 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
           }`}
           placeholder={`Trip ${index + 1}`}
         />
+        <select
+          value={vehicleType}
+          onChange={(e) => setVehicleType(e.target.value)}
+          className={`ml-2 rounded p-1 text-sm ${styles.input}`}
+        >
+          <option value={VEHICLE_TYPES.FUEL}>Fuel Vehicle</option>
+          <option value={VEHICLE_TYPES.EV}>Electric Vehicle</option>
+        </select>
       </div>
 
       <div className='space-y-4'>
@@ -170,36 +270,97 @@ const TripCard = ({trip, index, onUpdate, onDelete, isDarkMode}) => {
           />
         </div>
 
-        {/* Mileage Input */}
-        <div className='space-y-1'>
-          <div className='flex items-center justify-between'>
-            <label className='text-sm font-medium'>Mileage (km/l)</label>
+        {vehicleType === VEHICLE_TYPES.EV ? (
+          <>
+            {/* Range Input */}
+            <div className='space-y-1'>
+              <div className='flex items-center justify-between'>
+                <label className='text-sm font-medium'>Range (km)</label>
+                <input
+                  type='number'
+                  min={RANGE_LIMITS.MIN}
+                  max={RANGE_LIMITS.MAX}
+                  step={RANGE_LIMITS.STEP}
+                  value={range}
+                  onChange={(e) => setRange(Number(e.target.value))}
+                  className={`w-20 rounded p-1 text-center text-sm ${styles.input}`}
+                />
+              </div>
+              <input
+                type='range'
+                min={RANGE_LIMITS.MIN}
+                max={RANGE_LIMITS.MAX}
+                step={RANGE_LIMITS.STEP}
+                value={range}
+                onChange={handleRangeChange}
+                className={`h-1.5 w-full cursor-pointer appearance-none rounded-lg ${styles.slider}`}
+              />
+            </div>
+
+            {/* Battery Size Input */}
+            <div className='flex items-center gap-4'>
+              <label className='text-sm font-medium'>Battery Size (kWh)</label>
+              <input
+                type='number'
+                min={BATTERY_LIMITS.MIN}
+                max={BATTERY_LIMITS.MAX}
+                step={BATTERY_LIMITS.STEP}
+                value={batterySize}
+                onChange={(e) => setBatterySize(Number(e.target.value))}
+                className={`w-24 rounded p-1 text-center text-sm ${styles.input}`}
+              />
+            </div>
+
+            {/* Calculated Efficiency Display */}
+            <div className='flex items-center gap-8'>
+              <span className='text-sm font-medium'>Efficiency (km/kWh)</span>
+              <span className='text-sm font-medium'>{mileage}</span>
+            </div>
+          </>
+        ) : (
+          /* Mileage Input for Fuel Vehicles */
+          <div className='space-y-1'>
+            <div className='flex items-center justify-between'>
+              <label className='text-sm font-medium'>Mileage (km/l)</label>
+              <input
+                type='number'
+                step={MILEAGE_LIMITS.STEP}
+                value={mileage}
+                onChange={(e) => setMileage(Number(e.target.value))}
+                className={`w-20 rounded p-1 text-center text-sm ${styles.input}`}
+              />
+            </div>
             <input
-              type='number'
+              type='range'
+              min={MILEAGE_LIMITS.MIN}
+              max={MILEAGE_LIMITS.MAX}
               step={MILEAGE_LIMITS.STEP}
               value={mileage}
               onChange={(e) => setMileage(Number(e.target.value))}
-              className={`w-20 rounded p-1 text-center text-sm ${styles.input}`}
+              className={`h-1.5 w-full cursor-pointer appearance-none rounded-lg ${styles.slider}`}
             />
           </div>
-          <input
-            type='range'
-            min={MILEAGE_LIMITS.MIN}
-            max={MILEAGE_LIMITS.MAX}
-            step={MILEAGE_LIMITS.STEP}
-            value={mileage}
-            onChange={(e) => setMileage(Number(e.target.value))}
-            className={`h-1.5 w-full cursor-pointer appearance-none rounded-lg ${styles.slider}`}
-          />
-        </div>
+        )}
 
-        {/* Fuel Cost Input */}
+        {/* Cost Input */}
         <div className='flex items-center gap-4'>
-          <label className='text-sm font-medium'>Fuel Cost (₹/l)</label>
+          <label className='text-sm font-medium'>
+            {vehicleType === VEHICLE_TYPES.EV
+              ? 'Electricity Cost (₹/kWh)'
+              : 'Fuel Cost (₹/l)'}
+          </label>
           <input
             type='number'
-            value={fuelCost}
-            onChange={(e) => setFuelCost(Number(e.target.value))}
+            value={
+              vehicleType === VEHICLE_TYPES.EV ? electricityCost : fuelCost
+            }
+            onChange={(e) => {
+              if (vehicleType === VEHICLE_TYPES.EV) {
+                setElectricityCost(Number(e.target.value))
+              } else {
+                setFuelCost(Number(e.target.value))
+              }
+            }}
             className={`w-24 rounded p-1 text-center text-sm ${styles.input}`}
           />
         </div>
